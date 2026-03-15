@@ -128,7 +128,7 @@ const Home = () => {
                                 <div className="h-48 bg-slate-50 flex items-center justify-center relative overflow-hidden group-hover:opacity-90 transition-opacity">
                                     {item.imageUrl ? (
                                         <img 
-                                            src={`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000'}/${item.imageUrl}`} 
+                                            src={`${import.meta.env.PROD ? 'https://lost-and-found-api-dewt.onrender.com' : (import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000')}/${item.imageUrl}`} 
                                             alt={item.itemName} 
                                             className="w-full h-full object-cover"
                                             onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found'; }}

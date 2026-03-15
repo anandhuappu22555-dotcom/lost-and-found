@@ -14,7 +14,8 @@ const setupSecurity = (app) => {
     const allowedOrigins = [
         process.env.FRONTEND_URL,
         'http://localhost:5173',
-        'https://lost-and-found-sym-frontend.vercel.app'
+        'https://lost-and-found-sym-frontend.vercel.app',
+        'https://lost-and-found-sym-frontend-anandhu-appus-projects.vercel.app'
     ].filter(Boolean);
 
     app.use(cors({
