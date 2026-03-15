@@ -15,7 +15,10 @@ if (missingVars.length > 0) {
   process.exit(1);
 }
 
-// 2. Production Security Setup
+// 2. Trust Proxy (Required for Render/deployment behind reverse proxy)
+app.set('trust proxy', 1);
+
+// 3. Production Security Setup
 const { setupSecurity, centralErrorHandler } = require('./middleware/security');
 setupSecurity(app);
 
@@ -23,6 +26,14 @@ app.use(express.json());
 const logFormat = process.env.NODE_ENV === 'production' ? 'combined' : 'dev';
 app.use(require('morgan')(logFormat)); // Structured logging Phase 4.5
 app.use('/uploads', express.static('uploads'));
+
+// Normalize double slashes in URL (defensive fix for API base URL misconfiguration)
+app.use((req, res, next) => {
+  if (req.url.includes('//')) {
+    req.url = req.url.replace(/\/+/g, '/');
+  }
+  next();
+});
 
 app.get("/", (req, res) => {
   res.send("API RUNNING");
