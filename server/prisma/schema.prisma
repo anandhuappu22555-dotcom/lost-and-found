@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id              Int           @id @default(autoincrement())
+  username        String
+  email           String        @unique
+  password        String
+  role            String        @default("user") // "user", "admin"
+  trustScore      TrustScore?
+  lostItems       LostItem[]
+  foundItems      FoundItem[]
+  claimsFiled     Claim[]       @relation("Claimer")
+  reportsFiled    Report[]      @relation("Reporter")
+  reportsReceived Report[]      @relation("Reported")
+  createdAt       DateTime      @default(now())
+  emailVerified   Boolean       @default(false)
+  resetPasswordToken   String?   @unique
+  resetPasswordExpires DateTime?
+  loginSessions   LoginSession[]
+  notifications   Notification[]
+  sentMessages    ChatMessage[]  @relation("SentMessages")
+}
+
+model LoginSession {
+  id              Int                 @id @default(autoincrement())
+  userId          Int
+  user            User                @relation(fields: [userId], references: [id])
+  userAgent       String?
+  ipAddress       String?
+  isVerified      Boolean             @default(false)
+  createdAt       DateTime            @default(now())
+  confirmationToken ConfirmationToken?
+}
+
+model ConfirmationToken {
+  id              Int           @id @default(autoincrement())
+  token           String        @unique
+  sessionId       Int           @unique
+  loginSession    LoginSession  @relation(fields: [sessionId], references: [id])
+  expiresAt       DateTime
+  used            Boolean       @default(false)
+  createdAt       DateTime      @default(now())
+}
+
+model TrustScore {
+  id                Int     @id @default(autoincrement())
+  userId            Int     @unique
+  user              User    @relation(fields: [userId], references: [id])
+  successfulReturns Int     @default(0)
+  failedClaims      Int     @default(0)
+  reportsCount      Int     @default(0)
+  rating            Float   @default(5.0)
+}
+
+model LostItem {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  user           User      @relation(fields: [userId], references: [id])
+  itemName       String?
+  category       String
+  color          String?
+  material       String?
+  dateLost       DateTime
+  locationText   String
+  lat            Float?
+  lng            Float?
+  uniqueMarks    String?
+  imageUrl       String?   // Public/Masked version
+  originalImageUrl String? // Private original version
+  description    String?
+  status         String    @default("active") // active, match_found, completed
+  vectorMetadata Json?     
+  matches        Match[]
+  claims         Claim[]
+  createdAt      DateTime  @default(now())
+}
+
+model FoundItem {
+  id               Int       @id @default(autoincrement())
+  finderId         Int
+  finder           User      @relation(fields: [finderId], references: [id])
+  itemName         String?
+  category         String
+  locationText     String?
+  lat              Float
+  lng              Float
+  condition        String?
+  storagePlace     String?
+  finderPreference String?   
+  imageUrl         String    // Public/Masked version
+  originalImageUrl String?   // Private original version
+  imageVisibilityStatus String @default("masked") // masked, revealed
+  status           String    @default("active") // active, match_found, completed
+  matches          Match[]
+  claims           Claim[]
+  createdAt        DateTime  @default(now())
+}
+
+model Match {
+  id            Int       @id @default(autoincrement())
+  lostItemId    Int
+  lostItem      LostItem  @relation(fields: [lostItemId], references: [id])
+  foundItemId   Int
+  foundItem     FoundItem @relation(fields: [foundItemId], references: [id])
+  confidence    Float
+  status        String    @default("pending") // pending, active, completed
+  createdAt     DateTime  @default(now())
+}
+
+model Claim {
+  id               Int           @id @default(autoincrement())
+  lostItemId       Int?
+  lostItem         LostItem?     @relation(fields: [lostItemId], references: [id])
+  foundItemId      Int
+  foundItem        FoundItem     @relation(fields: [foundItemId], references: [id])
+  claimerId        Int
+  claimer          User          @relation("Claimer", fields: [claimerId], references: [id])
+  status           String        @default("verification_pending") // verification_pending, verification_failed, finder_review, approved, rejected, completed
+  verificationData String?       
+  claimProof       String?       
+  verificationAttempts Int       @default(0)
+  chatMessages     ChatMessage[]
+  createdAt        DateTime      @default(now())
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  claimId   Int
+  claim     Claim    @relation(fields: [claimId], references: [id])
+  senderId  Int 
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  content   String
+  timestamp DateTime @default(now())
+}
+
+model Report {
+  id         Int      @id @default(autoincrement())
+  reporterId Int
+  reporter   User     @relation("Reporter", fields: [reporterId], references: [id])
+  reportedId Int
+  reported   User     @relation("Reported", fields: [reportedId], references: [id])
+  reason     String
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  title     String
+  message   String
+  type      String   // "match", "claim", "system"
+  link      String?  // URL or route to navigate to
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

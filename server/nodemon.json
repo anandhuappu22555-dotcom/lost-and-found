@@ -1,0 +1,16 @@
+{
+    "ignore": [
+        "uploads/*",
+        "uploads/**",
+        "uploads/**/*",
+        "uploads/originals/*",
+        "uploads/originals/**"
+    ],
+    "watch": [
+        "routes/",
+        "utils/",
+        "middleware/",
+        "index.js"
+    ],
+    "ext": "js,json"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "lost-and-found-root",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd server && npm install && npx prisma generate",
+    "start": "cd server && node index.js"
+  },
+  "dependencies": {
+    "emailjs-com": "^3.2.0"
+  }
+}

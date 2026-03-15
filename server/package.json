@@ -1,0 +1,38 @@
+{
+  "name": "lost-and-found-server",
+  "version": "1.0.0",
+  "description": "Backend for Lost and Found System",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "npx prisma generate && npx prisma migrate deploy"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "@emailjs/nodejs": "^5.0.2",
+    "@prisma/client": "5.10.2",
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.2.1",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^7.0.12",
+    "pg": "^8.11.3",
+    "prisma": "5.10.2",
+    "sharp": "^0.34.5",
+    "xss-clean": "^0.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
