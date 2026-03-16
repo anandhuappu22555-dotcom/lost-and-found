@@ -37,12 +37,11 @@ const Chat = ({ claimId }) => {
             const res = await api.get(`chat/${claimId}?after=${lastMessageIdRef.current}`);
             const newMsgs = res.data;
             if (newMsgs.length > 0) {
-                // Filter out any optimistic messages that got confirmed
                 setMessages(prev => {
                     const confirmedIds = new Set(newMsgs.map(m => m.id));
-                    // Remove pending optimistic messages that now have a real counterpart
-                    const withoutStale = prev.filter(m => !m.pending || !confirmedIds.has(m.id));
-                    return [...withoutStale, ...newMsgs];
+                    // Filter out any existing message (pending or not) that is in the new batch
+                    const withoutDuplicates = prev.filter(m => !confirmedIds.has(m.id));
+                    return [...withoutDuplicates, ...newMsgs];
                 });
                 lastMessageIdRef.current = newMsgs[newMsgs.length - 1].id;
             }
@@ -94,7 +93,14 @@ const Chat = ({ claimId }) => {
             const confirmedMsg = res.data;
 
             // Replace optimistic msg with confirmed message from server
-            setMessages(prev => prev.map(m => m.id === optimisticId ? confirmedMsg : m));
+            setMessages(prev => {
+                // If polling already added this message (race condition), just remove the optimistic copy
+                if (prev.some(m => m.id === confirmedMsg.id)) {
+                    return prev.filter(m => m.id !== optimisticId);
+                }
+                // Otherwise replace the optimistic message with the real one
+                return prev.map(m => m.id === optimisticId ? confirmedMsg : m);
+            });
 
             // Update last known ID so polling doesn't re-fetch this message
             if (confirmedMsg.id > lastMessageIdRef.current) {
